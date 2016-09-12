@@ -1,0 +1,47 @@
+Introduction
+============
+
+The purpose is to transform xtensa plain memory dump to a standard Linux core dump file,
+so the user can use xtensa-gdb to analyze registers/variables/stack backtraces.
+
+
+1. Build xtensa gdb
+
+Note that for --prefix=XXX, XXX can be any directory storing the binaries built out
+
+$ cd gdb-7.6.1
+$ ./configure --prefix=~/install --target=xtensa
+$ make
+$ make install
+
+xtensa-gdb shall be available in ~/install/bin/xtensa-gdb
+
+
+2. Use nvmemgr command "dump-core-mem" to get DMEM dump from PB4 card
+
+
+3. Generate the fake core file from DMEM dump and ELF
+
+$ ../assemble_core.py -c ./dumpLocalMem.log -e NODE12.elf
+core.bin has been assembled, run xtensa-gdb NODE??.elf core.bin to analayze
+
+
+4. Use xtensa-gdb to analayze
+
+$ xtensa-gdb NODE??.elf core.bin to analayze global variables
+
+For example:
+
+(gdb) p dataStates
+$1 = {dataFrameStates = {rootPtr = 0x0, buffer = {{{ipcList = {list = {next = 0x0}, {ipcMsgHandler = 0x0, dnReqHandler = 0x0}}, header = {
+    list = {next = 0x0}, opCode = 0}}, opType = 0, outIndex = 0, logicalAddr = 0, lookupTableEntry = 0, {readCount = 0,
+        trimLen = 0, pageStripe = 0x0}, {lookupTableReadTimeStamp = 0, isRebuild = 0}, dataFrameIndex = 0, {dataFrameReadIndex = 0},
+    flashAddr = 0, timestamp = 0, tag = {0, 0}, next = 0x0}, {{ipcList = {list = {next = 0x0}, {ipcMsgHandler = 0x0,
+        dnReqHandler = 0x0}}, header = {list = {next = 0x0}, opCode = 0}}, opType = 0, outIndex = 0, logicalAddr = 0,
+        ......
+
+
+TODO
+====
+* Collect register dump and embed them into core file, so we can analyze stack traces.
+* If some gcc option is enabled, the xtensa ELF debug info will be gone, and it is unable to analyze variables with its names.
